@@ -1,0 +1,41 @@
+#!/bin/bash
+
+RED='/sys/devices/platform/faustus/kbbl/kbbl_red'
+GREEN='/sys/devices/platform/faustus/kbbl/kbbl_green'
+BLUE='/sys/devices/platform/faustus/kbbl/kbbl_blue'
+
+# needs to be 0 to work
+if [ $(cat /sys/devices/platform/faustus/kbbl/kbbl_mode) != "0" ]; then 
+	echo 0 > /sys/devices/platform/faustus/kbbl/kbbl_mode
+fi
+
+while true;do
+	TEMP=$(sensors | awk '/^Tctl:/ {printf "%d\n", $2}')
+	if [[ $TEMP -ge 40 ]]; then
+		REDBASE=$((($TEMP - 40) * 5))
+		if [ $REDBASE -le 255 ]; then
+			RVAL=$(printf '%x\n' $REDBASE)
+			echo $RVAL > $RED
+		fi
+	fi
+	if [[ $TEMP -le 90 ]]; then
+		GREENBASE=$((($TEMP - 90) * -5))
+		if [ $GREENBASE -le 255 ]; then
+			GVAL=$(printf '%x\n' $GREENBASE)
+			echo $GVAL > $GREEN
+		fi
+	fi
+	if [[ $TEMP -le 50 ]]; then
+		BLUEBASE=$((($TEMP - 50) * -5))
+		if [ $BLUEBASE -le 255 ]; then
+			BVAL=$(printf '%x\n' $BLUEBASE)
+			echo $BVAL > $BLUE
+		fi
+	fi
+	#save temp to keyboard
+	echo 1 > /sys/devices/platform/faustus/kbbl/kbbl_set
+	sleep 1
+done
+
+
+
