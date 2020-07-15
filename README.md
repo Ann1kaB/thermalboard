@@ -1,4 +1,4 @@
-heatboard for use with faustus
+thermalboard for use with faustus
 ==============================
 
 This is a simple bash script that makes your keyboard a visual thermal sensor.
