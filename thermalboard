@@ -11,26 +11,45 @@ fi
 
 while true;do
 	TEMP=$(sensors | awk '/^Tctl:/ {printf "%d\n", $2}')
-	if [[ $TEMP -ge 40 ]]; then
-		REDBASE=$((($TEMP - 40) * 5))
+	if [[ $TEMP -ge 50 ]]; then
+		REDBASE=$((($TEMP - 50) * 10))
 		if [ $REDBASE -le 255 ]; then
 			RVAL=$(printf '%x\n' $REDBASE)
 			echo $RVAL > $RED
+		elif [ $REDBASE -ge 255 ]; then
+			echo ff > $RED
 		fi
+	elif [[ $TEMP -lt 50 ]]; then
+		echo 00 > $RED
 	fi
 	if [[ $TEMP -le 90 ]]; then
-		GREENBASE=$((($TEMP - 90) * -5))
-		if [ $GREENBASE -le 255 ]; then
-			GVAL=$(printf '%x\n' $GREENBASE)
-			echo $GVAL > $GREEN
+		INCGREENBASE=$((($TEMP - 90) * -10))
+		if [ $INCGREENBASE -le 255 ]; then
+			INCGVAL=$(printf '%x\n' $INCGREENBASE)
+			echo $INCGVAL > $GREEN
+		elif [ $INCGREENBASE -ge 255 ]; then
+			echo ff > $GREEN
+		fi
+	elif [[ $TEMP -ge 90 ]]; then
+		echo 00 > $GREEN
+	fi
+	if [[ $TEMP -ge 20 && $TEMP -le 50 ]]; then
+		DECGREENBASE=$((($TEMP - 20) * 10))
+		if [ $DECGREENBASE -le 255 ];then
+			DECGVAL=$(printf '%x\n' $DECGREENBASE)
+			echo $DECGVAL > $GREEN
 		fi
 	fi
 	if [[ $TEMP -le 50 ]]; then
-		BLUEBASE=$((($TEMP - 50) * -5))
+		BLUEBASE=$((($TEMP - 50) * -10))
 		if [ $BLUEBASE -le 255 ]; then
 			BVAL=$(printf '%x\n' $BLUEBASE)
 			echo $BVAL > $BLUE
+		elif [ $BLUEBASE -ge 255 ]; then
+			echo ff > $BLUE
 		fi
+	elif [[ $TEMP -ge 60 ]]; then
+		echo 00 > $BLUE
 	fi
 	#save temp to keyboard
 	echo 1 > /sys/devices/platform/faustus/kbbl/kbbl_set
