@@ -4,6 +4,9 @@ RED='/sys/devices/platform/faustus/kbbl/kbbl_red'
 GREEN='/sys/devices/platform/faustus/kbbl/kbbl_green'
 BLUE='/sys/devices/platform/faustus/kbbl/kbbl_blue'
 
+# required to work correctly upon reboot
+echo 2a > /sys/devices/platform/faustus/kbbl/kbbl_flags
+
 # needs to be 0 to work
 if [ $(cat /sys/devices/platform/faustus/kbbl/kbbl_mode) != "0" ]; then 
 	echo 0 > /sys/devices/platform/faustus/kbbl/kbbl_mode
