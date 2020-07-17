@@ -16,7 +16,7 @@ while true;do
 		if [ $REDBASE -le 255 ]; then
 			RVAL=$(printf '%x\n' $REDBASE)
 			echo $RVAL > $RED
-		elif [ $REDBASE -ge 255 ]; then
+		elif [ $REDBASE -gt 255 ]; then
 			echo ff > $RED
 		fi
 	elif [[ $TEMP -lt 50 ]]; then
@@ -27,7 +27,7 @@ while true;do
 		if [ $INCGREENBASE -le 255 ]; then
 			INCGVAL=$(printf '%x\n' $INCGREENBASE)
 			echo $INCGVAL > $GREEN
-		elif [ $INCGREENBASE -ge 255 ]; then
+		elif [ $INCGREENBASE -gt 255 ]; then
 			echo ff > $GREEN
 		fi
 	elif [[ $TEMP -ge 90 ]]; then
@@ -45,7 +45,7 @@ while true;do
 		if [ $BLUEBASE -le 255 ]; then
 			BVAL=$(printf '%x\n' $BLUEBASE)
 			echo $BVAL > $BLUE
-		elif [ $BLUEBASE -ge 255 ]; then
+		elif [ $BLUEBASE -gt 255 ]; then
 			echo ff > $BLUE
 		fi
 	elif [[ $TEMP -ge 60 ]]; then
@@ -53,7 +53,8 @@ while true;do
 	fi
 	#save temp to keyboard
 	echo 1 > /sys/devices/platform/faustus/kbbl/kbbl_set
-	sleep 1
+	# refresh rate of the keyboard
+	sleep 0.5
 done
 
 
