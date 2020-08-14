@@ -1,2 +1,2 @@
 #!/bin/sh
-exec /usr/local/bin/thermalboard
+exec /usr/bin/python3 -u /usr/local/bin/pythermalboard
