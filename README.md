@@ -1,7 +1,7 @@
 thermalboard for use with faustus
 ==============================
 
-This is a simple bash script that makes your keyboard a visual thermal sensor.
+This is a simple python script that makes your keyboard a visual thermal sensor.
 
 I made this in my spare time in about an hour and want to share it with you all. Hopefully you find it useful :)
 
