@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+import os
 import time
 
 red = "/sys/devices/platform/faustus/kbbl/kbbl_red"
@@ -18,40 +20,49 @@ while True:
         redbase = (int(temp) - 50) * 10
         if redbase <= 255:
             rval = hex(redbase)
-            f=open(red, 'w')
-            f.write(rval)
+            r=open(red, 'w')
+            r.write(rval)
         elif redbase > 255:
-            f=open(red, 'w')
-            f.write("ff")
+            r=open(red, 'w')
+            r.write("ff")
+    elif int(temp) <= 50:
+        r=open(red, 'w')
+        r.write("00")
 
     if int(temp) <= 95:
         incgreenbase = (int(temp) - 95) * -10
         if incgreenbase <= 255:
             incgval = hex(incgreenbase)
-            f=open(green, 'w')
-            f.write(incgval)
+            ig=open(green, 'w')
+            ig.write(incgval)
         elif incgreenbase > 255:
-            f=open(green, 'w')
-            f.write("ff")
+            ig=open(green, 'w')
+            ig.write("ff")
+    elif int(temp) >= 95:
+        ig=open(green, 'w')
+        ig.write("00")
 
     if int(temp) >= 20 and int(temp) <= 50:
         decgreenbase = (int(temp) - 20) * 10
         if decgreenbase <= 255:
             decgval = hex(decgreenbase)
-            f=open(green, 'w')
-            f.write(decgval)
+            dg=open(green, 'w')
+            dg.write(decgval)
 
     if int(temp) <= 50:
         bluebase = (int(temp) - 50) * -10
         if bluebase <= 255:
             bval = hex(bluebase)
-            f=open(blue, 'w')
-            f.write(bval)
+            b=open(blue, 'w')
+            b.write(bval)
         elif bluebase > 255:
-            f=open(blue, 'w')
-            f.write("ff")
-    f=open("/sys/devices/platform/faustus/kbbl/kbbl_set", 'w')
-    f.write("1")
+            b=open(blue, 'w')
+            b.write("ff")
+    elif int(temp) >= 60:
+        b=open(blue, 'w')
+        b.write("00")
+    s=open("/sys/devices/platform/faustus/kbbl/kbbl_set", 'w')
+    s.write("1")
     time.sleep(0.5)
 
 
