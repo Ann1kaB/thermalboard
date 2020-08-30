@@ -10,7 +10,7 @@ blue = "/sys/devices/platform/faustus/kbbl/kbbl_blue"
 f=open("/sys/devices/platform/faustus/kbbl/kbbl_flags", 'w')
 f.write("2a")
 
-debug = True
+debug = False
 
 f=open("/sys/devices/platform/faustus/kbbl/kbbl_mode", 'w')
 if f != "0":
