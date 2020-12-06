@@ -3,9 +3,10 @@ import os
 import time
 import sys
 
-RED = "/sys/devices/platform/faustus/kbbl/kbbl_red"
-GREEN  = "/sys/devices/platform/faustus/kbbl/kbbl_green"
-BLUE  = "/sys/devices/platform/faustus/kbbl/kbbl_blue"
+colors = {
+"RED":"/sys/devices/platform/faustus/kbbl/kbbl_red",
+"GREEN":"/sys/devices/platform/faustus/kbbl/kbbl_green",
+"BLUE":"/sys/devices/platform/faustus/kbbl/kbbl_blue"}
 
 MAX_TEMP = 95
 MIN_TEMP = 20
@@ -19,15 +20,27 @@ KB_FLAGS.close()
 
 SET_KB = "/sys/devices/platform/faustus/kbbl/kbbl_set"
 
-KB_MODE = open("/sys/devices/platform/faustus/kbbl/kbbl_mode", 'w')
-KB_MODE_R = open("/sys/devices/platform/faustus/kbbl/kbbl_mode", 'r')
-if KB_MODE_R.read() != "00":
-    KB_MODE.write("00")
-KB_MODE.close()
-KB_MODE_R.close()
+with open("/sys/devices/platform/faustus/kbbl/kbbl_mode", 'w') as KB_MODE:
+    KB_MODE_R = open("/sys/devices/platform/faustus/kbbl/kbbl_mode", 'r')
+    if KB_MODE_R.read() != "00":
+        KB_MODE.write("00")
 
 debug = True
 
+def current_config():
+    prev_config = []
+    for color in colors:
+        prev_config.append(open(colors[color], 'r').read().strip('\n'))
+    return prev_config
+
+def restore_config(prev_config):
+    _c = 0
+    for color in colors:
+        with open(colors[color], 'w') as prev_color:
+            prev_color.write(prev_config[_c])
+        _c += 1
+    with open(SET_KB, 'w') as set_kb:
+        set_kb.write("1")
 
 def get_temp():
     CPU_TEMP = open("/sys/class/thermal/thermal_zone0/temp", 'r').read().splitlines()[0]
@@ -37,27 +50,17 @@ def get_temp():
 
 def over_max_temp():
 # reset KB B and G color
-    blue_w = open(BLUE, 'w')
-    blue_w.write("00")
-    blue_w.close()
-    green_w = open(GREEN, 'w')
-    green_w.write("00")
-    green_w.close()
-# OFF
-    red_w = open(RED, 'w')
-    red_w.write("00")
-    red_w.close()
-    set_kb = open(SET_KB, 'w')
-    set_kb.write("1")
-    set_kb.close()
+    for color in colors:
+        with open(colors[color], 'w') as color_w:
+            color_w.write("00")
+    with open(SET_KB, 'w') as set_kb:
+        set_kb.write("1")
     time.sleep(1)
 # ON
-    red_w = open(RED, 'w')
-    red_w.write("ff")
-    red_w.close()
-    set_kb = open(SET_KB, 'w')
-    set_kb.write("1")
-    set_kb.close()
+    with open(colors["RED"], 'w') as red_w:
+        red_w.write("ff")
+    with open(SET_KB, 'w') as set_kb:
+        set_kb.write("1")
     time.sleep(1)
 
 
@@ -104,8 +107,10 @@ def blue(cputemp):
 
 
 def main():
+
+    prev_config = current_config()
+
     while True:
-        set_kb = open(SET_KB, 'w')
         cputemp = get_temp()
         try:
             while cputemp > MAX_TEMP:
@@ -113,62 +118,56 @@ def main():
                 cputemp = get_temp()
 
             if cputemp >= MID_TEMP:
-                red_w = open(RED, 'w')
-                rval = red(cputemp)
-                if debug:
-                    print("rval: %s" % rval, cputemp)
-                red_w.write(rval)
-                red_w.close()
+                with open(colors["RED"], 'w') as red_w:
+                    rval = red(cputemp)
+                    if debug:
+                        print("rval: %s" % rval, cputemp)
+                    red_w.write(rval)
 
             elif cputemp <= MID_TEMP:
-                red_w = open(RED, 'w')
-                if debug:
-                    print("rval: 00")
-                red_w.write("00")
-                red_w.close()
+                with open(colors["RED"], 'w') as red_w:
+                    if debug:
+                        print("rval: 00")
+                    red_w.write("00")
 
             if cputemp >= MID_TEMP and cputemp <= MAX_TEMP:
-                green_w = open(GREEN, 'w')
-                incgval = inc_green(cputemp)
-                if debug:
-                    print("incgval: %s" % incgval, cputemp)
-                green_w.write(incgval)
-                green_w.close()
+                with open(colors["GREEN"], 'w') as green_w:
+                    incgval = inc_green(cputemp)
+                    if debug:
+                        print("incgval: %s" % incgval, cputemp)
+                    green_w.write(incgval)
 
             elif cputemp <= MIN_TEMP:
-                green_w = open(GREEN, 'w')
-                if debug:
-                    print("incgval: 00")
-                green_w.write("00")
-                green_w.close()
+                with open(colors[GREEN], 'w') as green_w:
+                    if debug:
+                        print("incgval: 00")
+                    green_w.write("00")
 
             if cputemp >= MIN_TEMP and cputemp <= MID_TEMP:
-                green_w = open(GREEN, 'w')
-                decgval = dec_green(cputemp)
-                if debug:
-                    print("decgval %s" % decgval, cputemp)
-                green_w.write(decgval)
-                green_w.close()
+                with open(colors["GREEN"], 'w') as green_w:
+                    decgval = dec_green(cputemp)
+                    if debug:
+                        print("decgval %s" % decgval, cputemp)
+                    green_w.write(decgval)
 
             if cputemp <= MID_TEMP:
-                blue_w = open(BLUE, 'w')
-                bval = blue(cputemp)
-                if debug:
-                    print("bval: %s" % bval, cputemp)
-                blue_w.write(bval)
-                blue_w.close()
+                with open(colors["BLUE"], 'w') as blue_w:
+                    bval = blue(cputemp)
+                    if debug:
+                        print("bval: %s" % bval, cputemp)
+                    blue_w.write(bval)
 
             if cputemp >= MID_TEMP:
-                blue_w = open(BLUE, 'w')
-                if debug:
-                    print("bval: 00")
-                blue_w.write("00")
-                blue_w.close()
-            set_kb.write("1")
-            set_kb.close()
+                with open(colors["BLUE"], 'w') as blue_w:
+                    if debug:
+                        print("bval: 00")
+                    blue_w.write("00")
+            with open(SET_KB, 'w') as set_kb:
+                set_kb.write("1")
             time.sleep(0.5)
 
         except KeyboardInterrupt:
+            restore_config(prev_config)
             print("Exiting.")
             sys.exit(0)
 main()
